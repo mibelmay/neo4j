@@ -1,5 +1,7 @@
 <h2>docker-compose для поднятия базы данных Neo4j</h2>
 
+нужно положить neo4j.dump файл с базой данных в папку import
+
 структура каталога:
 
 - neo4j
@@ -7,5 +9,5 @@
     - .env
     - data
     - import
-        - db.dump
+        - neo4j.dump
     - logs
