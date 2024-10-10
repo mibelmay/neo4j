@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.24.1-enterprise
+    volumes:  
+        - ./logs:/logs
+        - ./data:/data
+        - ./import:/var/lib/neo4j/import
+    environment:
+        - NEO4J_AUTH=${NEO4J_AUTH}
+        - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    command: >
+      bash -c "
+        neo4j-admin database load ${NEO4J_DATABASE} --from-path=/var/lib/neo4j/import && 
+        neo4j console
+      "
