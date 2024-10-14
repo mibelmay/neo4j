@@ -7,7 +7,7 @@
 - neo4j
     - docker-compose.yaml
     - .env
-    - data
+    - data (пустая папка)
     - import
         - neo4j.dump
-    - logs
+    - logs (пустая папка)
