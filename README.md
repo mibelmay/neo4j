@@ -11,3 +11,13 @@
     - import
         - neo4j.dump
     - logs
+
+запуск:
+docker-compose up -d
+
+логи можно посмотреть командой:
+docker-compose logs neo4j
+
+после поднятия контейнера Neo4j Browser будет доступен по адресу: http://localhost:7474/browser/
+попросит авторизоваться, нужно ввести логин: neo4j и пароль: neo4j
+после этого попросит изменить пароль
