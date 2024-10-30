@@ -15,6 +15,11 @@ services:
       - "${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT}"
     command: >
       bash -c "
-        neo4j-admin database load ${NEO4J_DATABASE} --from-path=/var/lib/neo4j/import && 
+        if [ ! -f /var/lib/neo4j/data/neostore.db ]; then
+          neo4j-admin database load ${NEO4J_DATABASE} --from-path=/var/lib/neo4j/import
+        fi
         neo4j console
       "
+  
+
+      
