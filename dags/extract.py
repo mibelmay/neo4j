@@ -7,13 +7,23 @@ from datetime import date
 import pandas as pd
 import os
 
+
+MINIO_ENDPOINT = "minio:9000"
+ACCESS_KEY = os.environ.get("MINIO_ROOT_USER")
+SECRET_KEY = os.environ.get("MINIO_ROOT_PASSWORD")
+NEO4J_ENDPOINT = "bolt://neo4j:7687"
+NEO4J_USERNAME = "neo4j"
+NEO4J_PASSWORD = "123456789"
+
+
 default_args = {
     "owner": "airflow",
     "start_date": days_ago(1),
 }
 
+
 minio_client = Minio(
-    "minio:9000", access_key="minio", secret_key="minio123456789", secure=False
+    MINIO_ENDPOINT, access_key=ACCESS_KEY, secret_key=SECRET_KEY, secure=False
 )
 
 
@@ -114,9 +124,9 @@ extract_nodes_task = PythonOperator(
     task_id="extract_and_save_nodes",
     python_callable=extract_and_save_nodes,
     op_kwargs={
-        "uri": "bolt://neo4j:7687",
-        "username": "neo4j",
-        "password": "123456789",
+        "uri": NEO4J_ENDPOINT,
+        "username": NEO4J_USERNAME,
+        "password": NEO4J_PASSWORD,
         "bucket_name": date.today().strftime("%Y-%m-%d"),
         "labels": ["Trend", "Region", "Request", "User"],
     },
@@ -128,9 +138,9 @@ extract_relationships_task = PythonOperator(
     task_id="extract_and_save_relationships",
     python_callable=extract_and_save_relationships,
     op_kwargs={
-        "uri": "bolt://neo4j:7687",
-        "username": "neo4j",
-        "password": "123456789",
+        "uri": NEO4J_ENDPOINT,
+        "username": NEO4J_USERNAME,
+        "password": NEO4J_PASSWORD,
         "bucket_name": date.today().strftime("%Y-%m-%d"),
         "queries": [
             "MATCH (u:User)-[:LIVES_IN]->(r:Region) return u.userId, r.regionId",
@@ -146,9 +156,9 @@ extract_requested_relationships_task = PythonOperator(
     task_id="extract_and_save_requested_relationships",
     python_callable=extract_and_save_requested_relationships,
     op_kwargs={
-        "uri": "bolt://neo4j:7687",
-        "username": "neo4j",
-        "password": "123456789",
+        "uri": NEO4J_ENDPOINT,
+        "username": NEO4J_USERNAME,
+        "password": NEO4J_PASSWORD,
         "bucket_name": date.today().strftime("%Y-%m-%d"),
         "batch_size": 50000,
     },
