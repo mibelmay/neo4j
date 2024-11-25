@@ -97,6 +97,26 @@ def transform_users_data(bucket_name: str, object_name: str):
     # save_data_to_minio("temp", "User_Gender.csv", user_gender_df)
 
 
+def transform_trends_data(bucket_name: str, object_name: str):
+    csv_data = load_data_from_minio(bucket_name, object_name)
+    df = pd.read_csv(csv_data, index_col=False)
+
+    trend_df = df[["trendId"]].rename(columns={"trendId": "trend_id"})
+    trend_df["load_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    trend_name_df = df[["trendId", "name"]].rename(columns={"trendId": "trend_id"})
+    trend_name_df["load_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    statuses = {"active": 1, "inactive": 2}
+    trend_status_df = df[["trendId", "status"]].rename(columns={"trendId": "trend_id", "status": "status_id"})
+    trend_status_df["status_id"] = trend_name_df["status_id"].map(statuses)
+    trend_status_df["load_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # save_data_to_minio("temp", "Trend.csv", trend_df)
+    # save_data_to_minio("temp", "Trend_Name.csv", trend_name_df)
+    # save_data_to_minio("temp", "Trend_Status.csv", trend_status_df)
+
+
 def save_data_to_minio(bucket_name: str, object_name: str, df: list):
     df.to_csv(object_name, index=False)
     minio_client.fput_object(bucket_name, object_name, object_name)
@@ -119,6 +139,16 @@ transform_users_task = PythonOperator(
     op_args=[
         date.today().strftime("%Y-%m-%d"),
         f'User-{date.today().strftime("%Y-%m-%d")}.csv',
+    ],
+    dag=dag,
+)
+
+transform_trends_task = PythonOperator(
+    task_id="transform_trends",
+    python_callable=transform_trends_data,
+    op_args=[
+        date.today().strftime("%Y-%m-%d"),
+        f'Trend-{date.today().strftime("%Y-%m-%d")}.csv',
     ],
     dag=dag,
 )
