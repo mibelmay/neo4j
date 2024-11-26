@@ -83,7 +83,7 @@ def extract_and_save_relationships(
 def extract_and_save_requested_relationships(
     uri: str, username: str, password: str, bucket_name: str, batch_size: int
 ):
-    query = "MATCH (u:User)-[p:REQUESTED]->(r:Request) return u.userId, r.requestId, p.requestDate"
+    query = "MATCH (u:User)-[p:REQUESTED]->(r:Request) return u.userId, r.requestId, r.text, p.requestDate"
     driver = GraphDatabase.driver(uri, auth=(username, password))
     with driver.session() as session:
         result = session.run(query)
@@ -128,7 +128,7 @@ extract_nodes_task = PythonOperator(
         "username": NEO4J_USERNAME,
         "password": NEO4J_PASSWORD,
         "bucket_name": date.today().strftime("%Y-%m-%d"),
-        "labels": ["Trend", "Region", "Request", "User"],
+        "labels": ["Trend", "Region", "User"],
     },
     dag=dag,
 )
