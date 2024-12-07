@@ -1,4 +1,4 @@
-neo4j
-minio
-pandas
-datetime
+neo4j=5.25.0
+minio=7.2.12
+pandas=2.2.2
+pyyaml=6.0.2

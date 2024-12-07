@@ -1,0 +1,64 @@
+MINIO_ENDPOINT: minio:9000
+ACCESS_KEY: minio
+SECRET_KEY: minio123456789
+NEO4J_ENDPOINT: "bolt://neo4j:7687"
+NEO4J_USERNAME: "neo4j"
+NEO4J_PASSWORD: "123456789"
+BATCH_SIZE: 50000
+renames: {
+  "region_df": {
+      "regionId": "region_id"
+   },
+   "region_name_df": {
+      "regionId": "region_id"
+   },
+   "user_df": {
+      "userId": "user_id"
+   },
+   "user_username_df": {
+      "userId": "user_id"
+   },
+   "user_birthdate_df": {
+      "userId": "user_id"
+   },
+   "user_regdate_df": {
+      "userId": "user_id",
+      "regDate": "reg_date"
+   },
+   "user_gender_df": {
+      "userId": "user_id",
+      "gender": "gender_id"
+   },
+   "trend_df": {
+      "trendId": "trend_id"
+   },
+   "trend_name_df": {
+      "trendId": "trend_id"
+   },
+   "trend_status_df": {
+      "trendId": "trend_id", 
+      "status": "status_id"
+   },
+   "request_df": {
+      "requestId": "request_id"
+   },
+   "request_text_df": {
+      "requestId": "request_id"
+   },
+   "request_date_df": {
+      "requestId": "request_id", 
+      "requestDate": "date"
+   },
+   "requested_df": {
+      "userId": "user_id", 
+      "requestId": "request_id"
+   },
+   "lives_df": {
+      "userId": "user_id", 
+      "regionId": "region_id"
+   },
+   "contains_df": {
+      "trendId": "trend_id", 
+      "requestId": "request_id"
+   }
+}
