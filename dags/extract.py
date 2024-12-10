@@ -94,7 +94,7 @@ def extract_and_save_requested_relationships(bucket_name: str, batch_size: int, 
                 minio_client,
                 bucket_name,
                 f"REQUESTED_{count // batch_size + 1}.csv",
-                batch,
+                data,
             )
 
 
