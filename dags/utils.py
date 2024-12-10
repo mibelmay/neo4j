@@ -6,6 +6,7 @@ import neo4j
 from airflow import AirflowException
 from io import StringIO
 from datetime import datetime
+import vertica_python
 
 
 def get_env_variables() -> dict:
@@ -59,4 +60,68 @@ def load_data_from_minio(minio_client: Minio, bucket_name: str, object_name: str
 
 def set_load_date(tables: list) -> None:
     for df in tables:
-        df["load_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        df["load_date"] = f"'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'"
+
+
+def quote_column(df: pd.DataFrame, column: str) -> None:
+    df[column] = df[column].apply(lambda x: f"'{x}'")
+
+
+class VerticaDatabase:
+    def __init__(self, host: str, port: int, user: str, password: str, database: str):
+        self.conn_info = {
+            'host': host,
+            'port': port,
+            'user': user,
+            'password': password,
+            'database': database,
+        }
+        self.connection = None
+        self.cursor = None
+        self.connect() 
+
+    def connect(self) -> None:
+        if self.connection is None:
+            self.connection = vertica_python.connect(**self.conn_info)
+            self.cursor = self.connection.cursor()
+
+    def close(self) -> None:
+        if self.cursor:
+            self.cursor.close()
+        if self.connection:
+            self.connection.close()
+
+    def execute_query(self, query: str) -> list:
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
+    def get_row_count(self, table_name: str) -> int:
+        query = f"SELECT COUNT(*) FROM {table_name};"
+        result = self.execute_query(query)
+        return result[0][0] if result else 0
+
+    def fetch_data(self, table_name: str, limit=10) -> list:
+        query = f"SELECT * FROM {table_name} LIMIT {limit};"
+        return self.execute_query(query)
+
+
+def save_dataframe_to_vertica(vertica_client: VerticaDatabase, df: pd.DataFrame, table_name: str) -> None:
+    columns = ', '.join(df.columns)
+    count = 0
+    values = []
+    for row in df.values:
+        count += 1
+        values.append('(' + ', '.join([f"{str(value)}" for value in row]) + ')')
+        if count % 5000 == 0:
+            query = f"""
+        INSERT INTO {table_name} ({columns})
+        VALUES {','.join(values)}; COMMIT;
+        """
+            vertica_client.execute_query(query)
+            values = []
+    if values:
+        query = f"""
+            INSERT INTO {table_name} ({columns})
+            VALUES {','.join(values)}; COMMIT;
+            """
+        vertica_client.execute_query(query)
