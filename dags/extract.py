@@ -55,11 +55,12 @@ def extract_and_save_relationships(
     bucket_name: str,
     queries: list,
     relationship_types: list,
+    columns: list
 ) -> None:
     index = 0
     for query in queries:
         result = extract_neo4j_data(neo4j_driver, query)
-        data = [record.values() for record in result]
+        data = pd.DataFrame(result, columns=columns[index])
         save_data_to_minio(
             minio_client,
             bucket_name,
@@ -69,7 +70,7 @@ def extract_and_save_relationships(
         index = index + 1
 
 
-def extract_and_save_requested_relationships(bucket_name: str, batch_size: int) -> None:
+def extract_and_save_requested_relationships(bucket_name: str, batch_size: int, columns: list) -> None:
     query = "MATCH (u:User)-[p:REQUESTED]->(r:Request) return u.userId, r.requestId, r.text, p.requestDate"
     with neo4j_driver.session() as session:
         result = session.run(query)
@@ -79,14 +80,16 @@ def extract_and_save_requested_relationships(bucket_name: str, batch_size: int) 
             batch.append(record.values())
             count += 1
             if count % batch_size == 0:
+                data = pd.DataFrame(batch, columns=columns)
                 save_data_to_minio(
                     minio_client,
                     bucket_name,
                     f"REQUESTED_{count // batch_size}.csv",
-                    batch,
+                    data,
                 )
                 batch = []
         if batch:
+            data = pd.DataFrame(batch, columns=columns)
             save_data_to_minio(
                 minio_client,
                 bucket_name,
@@ -126,6 +129,10 @@ extract_relationships_task = PythonOperator(
             "MATCH (t:Trend)-[:CONTAINS]->(r:Request) return t.trendId, r.requestId",
         ],
         "relationship_types": ["LIVES_IN", "CONTAINS"],
+        "columns": [
+            ["userId", "regionId"],
+            ["trendId", "requestId"]
+        ]
     },
     dag=dag,
 )
@@ -137,6 +144,7 @@ extract_requested_relationships_task = PythonOperator(
     op_kwargs={
         "bucket_name": BUCKET_NAME,
         "batch_size": BATCH_SIZE,
+        "columns": ["userId", "requestId", "text", "requestDate"]
     },
     dag=dag,
 )
