@@ -71,7 +71,6 @@ renames: {
       "regionId": "region_id"
    },
    "contains_df": {
-      "trendId": "trend_id", 
-      "requestId": "request_id"
+      "trendId": "trend_id"
    }
 }

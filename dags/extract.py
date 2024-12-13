@@ -71,7 +71,7 @@ def extract_and_save_relationships(
 
 
 def extract_and_save_requested_relationships(bucket_name: str, batch_size: int, columns: list) -> None:
-    query = "MATCH (u:User)-[p:REQUESTED]->(r:Request) return u.userId, r.requestId, r.text, p.requestDate"
+    query = "MATCH (u:User)-[p:REQUESTED]->(r:Request) return u.userId, p.requestId, r.text, p.requestDate"
     with neo4j_driver.session() as session:
         result = session.run(query)
         batch = []
@@ -126,12 +126,12 @@ extract_relationships_task = PythonOperator(
         "bucket_name": BUCKET_NAME,
         "queries": [
             "MATCH (u:User)-[:LIVES_IN]->(r:Region) return u.userId, r.regionId",
-            "MATCH (t:Trend)-[:CONTAINS]->(r:Request) return t.trendId, r.requestId",
+            "MATCH (t:Trend)-[:CONTAINS]->(r:Request) return t.trendId, r.text",
         ],
         "relationship_types": ["LIVES_IN", "CONTAINS"],
         "columns": [
             ["userId", "regionId"],
-            ["trendId", "requestId"]
+            ["trendId", "text"]
         ]
     },
     dag=dag,
