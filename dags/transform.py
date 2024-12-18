@@ -158,7 +158,10 @@ def transform_contains_data(bucket_name: str, object_name: str) -> None:
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 
-    contains_df = df[["trendId", "requestId"]].rename(columns=renames["contains_df"])
+    temp_df = df[["trendId", "text"]].rename(columns=renames["contains_df"])
+
+    contains_df = create_contains_df(vertica_client, temp_df)
+
     set_load_date([contains_df])
 
     save_dataframe_to_vertica(vertica_client, contains_df, "anchor_model.Contains")
@@ -184,15 +187,15 @@ transform_users_task = PythonOperator(
     dag=dag,
 )
 
-# transform_trends_task = PythonOperator(
-#     task_id="transform_trends",
-#     python_callable=transform_trends_data,
-#     op_args=[
-#         BUCKET_NAME,
-#         f"Trend-{BUCKET_NAME}.csv",
-#     ],
-#     dag=dag,
-# )
+transform_trends_task = PythonOperator(
+    task_id="transform_trends",
+    python_callable=transform_trends_data,
+    op_args=[
+        BUCKET_NAME,
+        f"Trend-{BUCKET_NAME}.csv",
+    ],
+    dag=dag,
+)
 
 
 transform_lives_task = PythonOperator(
@@ -209,14 +212,6 @@ requested_tasks = []
 prefix = "REQUESTED_"
 requested_files = get_requested_files(minio_client, BUCKET_NAME, prefix)
 
-for file_name in requested_files:
-    transform_requests_task = PythonOperator(
-        task_id=f"transform_{file_name}",
-        python_callable=transform_requests_data,
-        op_args=[BUCKET_NAME, file_name],
-        dag=dag,
-    )
-
 for i in range(len(requested_files)):
     requested_tasks.append(PythonOperator(
         task_id=f"transform_{requested_files[i]}",
@@ -225,19 +220,21 @@ for i in range(len(requested_files)):
         dag=dag,
     ))
 
-# transform_contains_task = PythonOperator(
-#     task_id="transform_contains",
-#     python_callable=transform_contains_data,
-#     op_args=[
-#         BUCKET_NAME,
-#         f"CONTAINS-{BUCKET_NAME}.csv",
-#     ],
-#     dag=dag,
-# )
+transform_contains_task = PythonOperator(
+    task_id="transform_contains",
+    python_callable=transform_contains_data,
+    op_args=[
+        BUCKET_NAME,
+        f"CONTAINS-{BUCKET_NAME}.csv",
+    ],
+    dag=dag,
+)
 
 (
     transform_regions_task
     >> transform_users_task
     >> transform_lives_task
+    >> transform_trends_task
     >> requested_tasks
+    >> transform_contains_task
 )

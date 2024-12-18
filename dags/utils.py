@@ -10,8 +10,8 @@ import vertica_python
 
 
 def get_env_variables() -> dict:
-    script_dir = os.path.dirname(os.path.abspath(__file__))  # Путь к директории скрипта
-    config_path = os.path.join(script_dir, "config.yaml")   # Полный путь к config.yaml
+    script_dir = os.path.dirname(os.path.abspath(__file__)) 
+    config_path = os.path.join(script_dir, "config.yaml") 
     with open(config_path, "r") as file:
         return yaml.safe_load(file)
 
@@ -125,3 +125,22 @@ def save_dataframe_to_vertica(vertica_client: VerticaDatabase, df: pd.DataFrame,
             VALUES {','.join(values)}; COMMIT;
             """
         vertica_client.execute_query(query)
+
+
+def create_contains_df(vertica_client: VerticaDatabase, df: pd.DataFrame) -> pd.DataFrame:
+    data = []
+
+    for index, row in df.iterrows():
+        trend_id = row['trend_id']
+        text = row['text']
+        
+        query = f"SELECT request_id FROM anchor_model.Request_Text WHERE text = '{text}'"
+        results = vertica_client.execute_query(query)
+        
+        request_ids = [result[0] for result in results]
+        
+        for request_id in request_ids:
+            data.append({'trend_id': trend_id, 'request_id': request_id})
+        
+    contains_df = pd.DataFrame(data)
+    return contains_df
