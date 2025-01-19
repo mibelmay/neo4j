@@ -1,24 +1,15 @@
-<h2>docker-compose для поднятия базы данных Neo4j и Apache Airflow</h2>
+<h2>семестровый проект по проектированию DWH</h2>
 
-нужно положить neo4j.dump файл с базой данных в папку import
+презентация к проекту: https://clck.ru/3Fpyau
 
-структура каталога:
+для запуска нужно создать пустые папки:
 
-- dwh_project
-    - docker-compose.yaml
-    - .env
-    - data (пустая папка)
-    - import
-        - neo4j.dump
-    - logs (пустая папка)
-    - dags
-    - airflow-logs (пустая папка для логов airflow)
+    - data
+    - logs
+    - airflow-logs
 
 запуск: docker-compose up -d
 
-логи neo4j можно посмотреть командой: docker-compose logs neo4j
-
 <p>Apache Airflow UI будет доступен по адресу: http://localhost:8080/ (логин и пароль admin)</p>
-<p>Neo4j Browser будет доступен по адресу: http://localhost:7474/browser/</p>
-<p>попросит авторизоваться, нужно ввести логин: neo4j и пароль: neo4j</p>
-<p>после этого попросит изменить пароль</p>
+<p>Neo4j Browser будет доступен по адресу: http://localhost:7474/browser/ (логин и пароль neo4j)</p>
+<p>Minio Console будет доступна по адресу: http://localhost:9001/ (minio/minio123456789)</p>
