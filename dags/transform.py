@@ -44,7 +44,7 @@ dag = DAG(
 )
 
 
-def transform_regions_data(bucket_name: str, object_name: str) -> None:
+def transform_regions_data(bucket_name: str, object_name: str):
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 
@@ -56,11 +56,9 @@ def transform_regions_data(bucket_name: str, object_name: str) -> None:
 
     save_dataframe_to_vertica(vertica_client, region_df, "anchor_model.Region")
     save_dataframe_to_vertica(vertica_client, region_name_df, "anchor_model.Region_Name")
-    # save_data_to_minio(minio_client, "temp", "Region.csv", region_df)
-    # save_data_to_minio(minio_client, "temp", "Region_Name.csv", region_name_df)
     
 
-def transform_users_data(bucket_name: str, object_name: str) -> None:
+def transform_users_data(bucket_name: str, object_name: str):
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 
@@ -89,14 +87,9 @@ def transform_users_data(bucket_name: str, object_name: str) -> None:
     save_dataframe_to_vertica(vertica_client, user_birthdate_df, "anchor_model.User_Birthdate")
     save_dataframe_to_vertica(vertica_client, user_regdate_df, "anchor_model.User_Regdate")
     save_dataframe_to_vertica(vertica_client, user_gender_df, "anchor_model.User_Gender")
-    # save_data_to_minio(minio_client, "temp", "User.csv", user_df)
-    # save_data_to_minio(minio_client, "temp", "User_Username.csv", user_username_df)
-    # save_data_to_minio(minio_client, "temp", "User_Birthdate.csv", user_birthdate_df)
-    # save_data_to_minio(minio_client, "temp", "User_Reg_date.csv", user_regdate_df)
-    # save_data_to_minio(minio_client, "temp", "User_Gender.csv", user_gender_df)
 
 
-def transform_trends_data(bucket_name: str, object_name: str) -> None:
+def transform_trends_data(bucket_name: str, object_name: str):
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 
@@ -115,12 +108,9 @@ def transform_trends_data(bucket_name: str, object_name: str) -> None:
     save_dataframe_to_vertica(vertica_client, trend_df, "anchor_model.Trend")
     save_dataframe_to_vertica(vertica_client, trend_name_df, "anchor_model.Trend_Name")
     save_dataframe_to_vertica(vertica_client, trend_status_df, "anchor_model.Trend_Status")
-    # save_data_to_minio(minio_client, "temp", "Trend.csv", trend_df)
-    # save_data_to_minio(minio_client, "temp", "Trend_Name.csv", trend_name_df)
-    # save_data_to_minio(minio_client, "temp", "Trend_Status.csv", trend_status_df)
 
 
-def transform_requests_data(bucket_name: str, object_name: str) -> None:
+def transform_requests_data(bucket_name: str, object_name: str):
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 
@@ -142,7 +132,7 @@ def transform_requests_data(bucket_name: str, object_name: str) -> None:
     save_dataframe_to_vertica(vertica_client, requested_df, "anchor_model.Requested")
 
 
-def transform_lives_data(bucket_name: str, object_name: str) -> None:
+def transform_lives_data(bucket_name: str, object_name: str):
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 
@@ -154,7 +144,7 @@ def transform_lives_data(bucket_name: str, object_name: str) -> None:
     vertica_client.close()
 
 
-def transform_contains_data(bucket_name: str, object_name: str) -> None:
+def transform_contains_data(bucket_name: str, object_name: str):
     csv_data = load_data_from_minio(minio_client, bucket_name, object_name)
     df = pd.read_csv(csv_data, index_col=False)
 

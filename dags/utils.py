@@ -22,15 +22,15 @@ def create_minio_bucket(minio_client: Minio, bucket_name: str) -> None:
 
 
 def save_data_to_minio(
-    minio_client: Minio, bucket_name: str, object_name: str, data: list
+    minio_client: Minio, bucket_name: str, object_name: str, data_from_neo4j: list
 ) -> None:
-    df = pd.DataFrame(data)
-    df.to_csv(object_name, index=False)
+    dataframe_to_save = pd.DataFrame(data_from_neo4j)
+    dataframe_to_save.to_csv(object_name, index=False)
     minio_client.fput_object(bucket_name, object_name, object_name)
     os.remove(object_name)
 
 
-def extract_neo4j_data(driver: neo4j.Driver, query: str) -> list:
+def extract_neo4j_data(driver: neo4j.Driver, query: str) -> list[neo4j.Record]:
     with driver.session() as session:
         result = list(session.run(query))
     return result
@@ -92,6 +92,14 @@ class VerticaDatabase:
             self.connection.close()
 
     def execute_query(self, query: str) -> list:
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+    
+    def execute_query_from_file(self, file_name: str) -> list:
+        script_dir = os.path.dirname(os.path.abspath(__file__)) 
+        query_path = os.path.join(script_dir, file_name) 
+        with open(query_path, 'r') as f:
+            query = f.read()
         self.cursor.execute(query)
         return self.cursor.fetchall()
 

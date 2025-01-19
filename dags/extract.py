@@ -41,7 +41,7 @@ dag = DAG(
 )
 
 
-def extract_and_save_nodes(bucket_name: str, labels: list) -> None:
+def extract_and_save_nodes(bucket_name: str, labels: list):
     for label in labels:
         query = f"MATCH (n:{label}) RETURN n"
         result = extract_neo4j_data(neo4j_driver, query)
@@ -56,7 +56,7 @@ def extract_and_save_relationships(
     queries: list,
     relationship_types: list,
     columns: list
-) -> None:
+):
     index = 0
     for query in queries:
         result = extract_neo4j_data(neo4j_driver, query)
@@ -70,7 +70,7 @@ def extract_and_save_relationships(
         index = index + 1
 
 
-def extract_and_save_requested_relationships(bucket_name: str, batch_size: int, columns: list) -> None:
+def extract_and_save_requested_relationships(bucket_name: str, batch_size: int, columns: list):
     query = "MATCH (u:User)-[p:REQUESTED]->(r:Request) return u.userId, p.requestId, r.text, p.requestDate"
     with neo4j_driver.session() as session:
         result = session.run(query)

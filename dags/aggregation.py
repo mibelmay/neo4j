@@ -65,10 +65,10 @@ def create_aggregate() -> None:
         )
 
     result_df = pd.DataFrame(result_data)
-    quote_column(result_df, 'trend')
-    quote_column(result_df, 'region')
-    quote_column(result_df, 'gender_stats')
-    save_dataframe_to_vertica(vertica_client, result_df, 'data_mart.Trends_Aggregate')
+    quote_column(result_df, "trend")
+    quote_column(result_df, "region")
+    quote_column(result_df, "gender_stats")
+    save_dataframe_to_vertica(vertica_client, result_df, "data_mart.Trends_Aggregate")
 
 
 def get_gender_stats(filtered_requests: pd.DataFrame) -> str:
@@ -83,7 +83,6 @@ def get_gender_stats(filtered_requests: pd.DataFrame) -> str:
             "request_count"
         ]
 
-    # топ-5
     for gender in gender_stats:
         popular_keys = dict(
             sorted(
@@ -94,37 +93,12 @@ def get_gender_stats(filtered_requests: pd.DataFrame) -> str:
         )
         gender_stats[gender]["popular_keys"] = popular_keys
 
-    return json.dumps(gender_stats)
+    return json.dumps(gender_stats, ensure_ascii=False, indent=2)
 
 
 def get_trends_aggregate() -> pd.DataFrame:
-    trends_data = vertica_client.execute_query(
-        "SELECT \
-        tn.trend_id, \
-        tn.name AS trend_name, \
-        COUNT(rq.request_id) AS request_count, \
-        MIN(datediff(year, ub.birthdate, now())) AS min_age, \
-        ROUND(AVG(datediff(year, ub.birthdate, now())), 0) AS avg_age, \
-        MAX(datediff(year, ub.birthdate, now())) AS max_age, \
-        l.region_id, \
-        rn.name AS region \
-    FROM \
-        anchor_model.Trend_Name tn \
-    JOIN \
-        anchor_model.Contains c ON  tn.trend_id = c.trend_id \
-    JOIN \
-        anchor_model.Requested rq ON c.request_id = rq.request_id \
-    JOIN \
-        anchor_model.User_Birthdate ub ON rq.user_id = ub.user_id \
-    JOIN \
-        anchor_model.User_Gender ug ON rq.user_id = ug.user_id \
-    JOIN \
-        anchor_model.Lives l ON rq.user_id = l.user_id \
-    JOIN \
-        anchor_model.Region_Name rn ON l.region_id = rn.region_id \
-    GROUP BY \
-        tn.name, rn.name, tn.trend_id, l.region_id \
-    ORDER BY tn.trend_id;"
+    trends_data = vertica_client.execute_query_from_file(
+        "vertica_queries/trends_aggregate.sql"
     )
 
     return pd.DataFrame(
@@ -143,20 +117,8 @@ def get_trends_aggregate() -> pd.DataFrame:
 
 
 def get_requests_aggregate() -> pd.DataFrame:
-    requests_data = vertica_client.execute_query(
-        "SELECT \
-        rt.text AS request_text, \
-        count(*) AS request_count, \
-        u.gender_id, \
-        l.region_id, \
-        c.trend_id \
-        FROM anchor_model.Contains c \
-        JOIN anchor_model.Request_Text rt ON c.request_id = rt.request_id \
-        JOIN anchor_model.Requested r ON c.request_id = r.request_id \
-        JOIN anchor_model.User_Gender u ON r.user_id = u.user_id \
-        JOIN anchor_model.Lives l ON u.user_id = l.user_id \
-        GROUP BY rt.text, u.gender_id, l.region_id, c.trend_id \
-        ORDER BY gender_id, l.region_id;"
+    requests_data = vertica_client.execute_query_from_file(
+        "vertica_queries/requests_aggregate.sql"
     )
 
     return pd.DataFrame(
